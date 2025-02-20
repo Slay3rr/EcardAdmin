@@ -1,13 +1,12 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://web006.azure.certif.academy/api',
     headers: {
         'Content-Type': 'application/json'
     }
 });
 
-// Ajouter automatiquement le token JWT aux requêtes
 axiosInstance.interceptors.request.use(config => {
     const token = localStorage.getItem('auth_token');
     if (token) {

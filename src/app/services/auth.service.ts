@@ -1,62 +1,29 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import axios from 'axios';
+import axiosInstance from './axios.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://127.0.0.1:8000/api';
-
-  constructor(private router: Router) {
-    this.initializeAxios();
-  }
-
-  private initializeAxios(): void {
-    // Configuration globale d'Axios
-    axios.defaults.baseURL = this.API_URL;
-    
-    // Ajouter l'intercepteur pour tous les appels
-    axios.interceptors.request.use(
-      (config) => {
-        const token = this.getToken();
-        if (token) {
-          config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => {
-        return Promise.reject(error);
-      }
-    );
-
-    // Intercepteur pour gérer les redirections et erreurs d'auth
-    axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401 || error.response?.status === 302) {
-          console.log('Token invalide ou expiré');
-          this.logout();
-        }
-        return Promise.reject(error);
-      }
-    );
-  }
+  constructor(private router: Router) {}
 
   async login(email: string, password: string): Promise<void> {
     try {
-      const response = await axios.post('/login', { email, password });
-      console.log('Réponse login:', response); // Debug
+      const response = await axiosInstance.post('/login', { email, password });
+      console.log('Réponse complète:', JSON.stringify(response.data)); // Pour voir la structure exacte
 
-      if (response.data.token) {
-        localStorage.setItem('auth_token', response.data.token);
+      // On vérifie si le token existe dans la réponse
+      const token = response.data.token || response.data.access_token;
+      if (token) {
+        localStorage.setItem('auth_token', token);
         await this.router.navigate(['/admin/dashboard']);
       } else {
-        console.error('Pas de token dans la réponse');
-        throw new Error('Authentication failed');
+        console.error('Structure de la réponse:', response.data);
+        throw new Error('Token non trouvé dans la réponse');
       }
     } catch (error) {
-      console.error('Erreur login:', error);
+      console.error('Erreur login détaillée:', error);
       throw error;
     }
   }
@@ -64,7 +31,7 @@ export class AuthService {
   getToken(): string | null {
     const token = localStorage.getItem('auth_token');
     if (token) {
-      console.log('Token trouvé:', token.substring(0, 20) + '...'); // Debug - montre le début du token
+      console.log('Token trouvé:', token.substring(0, 20) + '...');
     } else {
       console.log('Pas de token trouvé');
     }

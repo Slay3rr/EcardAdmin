@@ -5,8 +5,7 @@ import axios, { AxiosError } from 'axios';
   providedIn: 'root'
 })
 export class ArticleService {
-  private apiUrl = 'http://127.0.0.1:8000/api/admin/articles';
-
+  private endpoint = 'http://web006.azure.certif.academy/api/admin/articles'; // URL complète
   private getHeaders() {
     return {
       'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -15,7 +14,7 @@ export class ArticleService {
   }
   async getCategories() {
     try {
-      const response = await axios.get(`${this.apiUrl}/categories`, {
+      const response = await axios.get(`${this.endpoint}/categories`, {
         headers: this.getHeaders()
       });
       return response.data;
@@ -27,7 +26,7 @@ export class ArticleService {
 
   async getArticles() {
     try {
-      const response = await axios.get(this.apiUrl, { headers: this.getHeaders() });
+      const response = await axios.get(this.endpoint, { headers: this.getHeaders() });
       return response.data;
     } catch (error) {
       console.error('Erreur getAllArticles:', error);
@@ -37,7 +36,7 @@ export class ArticleService {
 
   async getArticle(id: number) {
     try {
-      const response = await axios.get(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+      const response = await axios.get(`${this.endpoint}/${id}`, { headers: this.getHeaders() });
       return response.data;
     } catch (error) {
       console.error('Erreur getArticle:', error);
@@ -47,7 +46,7 @@ export class ArticleService {
 
   async createArticle(articleData: any) {
     try {
-      const response = await axios.post(this.apiUrl, articleData, { 
+      const response = await axios.post(this.endpoint, articleData, { 
         headers: this.getHeaders() 
       });
       return response.data;
@@ -59,7 +58,7 @@ export class ArticleService {
 
   async updateArticle(id: number, articleData: any) {
     try {
-      const response = await axios.put(`${this.apiUrl}/${id}`, articleData, { 
+      const response = await axios.put(`${this.endpoint}/${id}`, articleData, { 
         headers: this.getHeaders() 
       });
       return response.data;
@@ -71,7 +70,7 @@ export class ArticleService {
 
   async deleteArticle(id: number) {
     try {
-      await axios.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+      await axios.delete(`${this.endpoint}/${id}`, { headers: this.getHeaders() });
     } catch (error) {
       console.error('Erreur deleteArticle:', error);
       throw error;
