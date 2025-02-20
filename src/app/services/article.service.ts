@@ -1,9 +1,80 @@
 import { Injectable } from '@angular/core';
+import axios, { AxiosError } from 'axios';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ArticleService {
+  private apiUrl = 'http://127.0.0.1:8000/api/admin/articles';
 
-  constructor() { }
+  private getHeaders() {
+    return {
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      'Content-Type': 'application/json'
+    };
+  }
+  async getCategories() {
+    try {
+      const response = await axios.get(`${this.apiUrl}/categories`, {
+        headers: this.getHeaders()
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur getCategories:', error);
+      throw error;
+    }
+  }
+
+  async getArticles() {
+    try {
+      const response = await axios.get(this.apiUrl, { headers: this.getHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur getAllArticles:', error);
+      throw error;
+    }
+  }
+
+  async getArticle(id: number) {
+    try {
+      const response = await axios.get(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur getArticle:', error);
+      throw error;
+    }
+  }
+
+  async createArticle(articleData: any) {
+    try {
+      const response = await axios.post(this.apiUrl, articleData, { 
+        headers: this.getHeaders() 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur createArticle:', error);
+      throw error;
+    }
+  }
+
+  async updateArticle(id: number, articleData: any) {
+    try {
+      const response = await axios.put(`${this.apiUrl}/${id}`, articleData, { 
+        headers: this.getHeaders() 
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erreur updateArticle:', error);
+      throw error;
+    }
+  }
+
+  async deleteArticle(id: number) {
+    try {
+      await axios.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    } catch (error) {
+      console.error('Erreur deleteArticle:', error);
+      throw error;
+    }
+  }
 }

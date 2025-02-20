@@ -6,41 +6,77 @@ import axios from 'axios';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://127.0.0.1:8000';
+  private readonly API_URL = 'http://127.0.0.1:8000/api';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) {
+    this.initializeAxios();
+  }
 
-  async login(username: string, password: string): Promise<void> {
-    try {
-      const response = await axios.post(
-        `${this.apiUrl}/api/login`,
-        {
-          email: username,
-          password: password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+  private initializeAxios(): void {
+    // Configuration globale d'Axios
+    axios.defaults.baseURL = this.API_URL;
+    
+    // Ajouter l'intercepteur pour tous les appels
+    axios.interceptors.request.use(
+      (config) => {
+        const token = this.getToken();
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
         }
-      );
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Intercepteur pour gérer les redirections et erreurs d'auth
+    axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401 || error.response?.status === 302) {
+          console.log('Token invalide ou expiré');
+          this.logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  async login(email: string, password: string): Promise<void> {
+    try {
+      const response = await axios.post('/login', { email, password });
+      console.log('Réponse login:', response); // Debug
 
       if (response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
-        this.router.navigate(['/admin/dashboard']);
+        await this.router.navigate(['/admin/dashboard']);
+      } else {
+        console.error('Pas de token dans la réponse');
+        throw new Error('Authentication failed');
       }
     } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
+      console.error('Erreur login:', error);
       throw error;
     }
+  }
+
+  getToken(): string | null {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      console.log('Token trouvé:', token.substring(0, 20) + '...'); // Debug - montre le début du token
+    } else {
+      console.log('Pas de token trouvé');
+    }
+    return token;
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 
   logout(): void {
     localStorage.removeItem('auth_token');
     this.router.navigate(['/login']);
-  }
-
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('auth_token');
   }
 }

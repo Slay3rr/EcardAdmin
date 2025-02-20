@@ -1,1 +1,43 @@
-<p>users-list works!</p>
+<div class="container-fluid">
+    <h2 class="mb-4">Gestion des Utilisateurs</h2>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+    </div>
+
+    <!-- Tableau des utilisateurs -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Prénom</th>
+                    <th>Nom</th>
+                    <th>Rôles</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.firstName }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.roles }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm me-2" 
+                                [routerLink]="['/admin/users', user.id]">
+                            Détails
+                        </button>
+                        <button class="btn btn-danger btn-sm" 
+                                (click)="deleteUser(user.id)">
+                            Supprimer
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

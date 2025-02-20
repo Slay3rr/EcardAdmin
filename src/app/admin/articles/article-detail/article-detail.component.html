@@ -1,0 +1,93 @@
+<div class="container mt-4">
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <div *ngIf="article">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ isEditing ? 'Modifier l\'article' : article.Titre }}</h1>
+            <div>
+                <button *ngIf="!isEditing" 
+                        class="btn btn-primary me-2" 
+                        (click)="toggleEdit()">
+                    Modifier
+                </button>
+                <button class="btn btn-secondary" 
+                        routerLink="/admin/articles">
+                    Retour
+                </button>
+            </div>
+        </div>
+
+        <!-- Mode édition -->
+        <div *ngIf="isEditing" class="card mb-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Titre</label>
+                    <input type="text" 
+                           class="form-control" 
+                           [(ngModel)]="editedArticle.Titre">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contenu</label>
+                    <textarea class="form-control" 
+                            rows="3" 
+                            [(ngModel)]="editedArticle.content">
+                    </textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Prix</label>
+                    <input type="number" 
+                           class="form-control" 
+                           [(ngModel)]="editedArticle.price">
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success" 
+                            (click)="onSave()">
+                        Enregistrer
+                    </button>
+                    <button class="btn btn-secondary" 
+                            (click)="onCancel()">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mode affichage -->
+        <div *ngIf="!isEditing" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Informations</h5>
+                <p class="card-text"><strong>Titre:</strong> {{ article.Titre }}</p>
+                <p class="card-text"><strong>Contenu:</strong> {{ article.content }}</p>
+                <p class="card-text"><strong>Prix:</strong> {{ article.price }}€</p>
+                <p class="card-text">
+                    <strong>Catégories:</strong> {{ getCategoryNames() }}
+                </p>
+            </div>
+        </div>
+        <div *ngIf="!isEditing && article.offres && article.offres.length > 0" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Offres reçues</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Prix proposé</th>
+                                <th>Quantité</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let offre of article.offres">
+                                <td>{{ offre.user?.email || 'Utilisateur inconnu' }}</td>
+                                <td>{{ offre.price }}€</td>
+                                <td>{{ offre.quantity }}</td>
+                                <td>{{ offre.description || '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

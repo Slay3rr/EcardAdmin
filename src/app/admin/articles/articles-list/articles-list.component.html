@@ -1,1 +1,41 @@
-<p>articles-list works!</p>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Articles</h2>
+        <button routerLink="/admin/articles/create" 
+                class="btn btn-primary">
+          Ajouter
+        </button>
+      </div>
+  
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Contenu</th>
+            <th>Prix</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let article of articles">
+            <td>{{ article.Titre }}</td>
+            <td>{{ article.content }}</td>
+            <td>{{ article.price }}€</td>
+            <td>
+              <button [routerLink]="['/admin/articles', article.id]" 
+                      class="btn btn-sm btn-info me-2">
+                Détails
+              </button>
+              <button class="btn btn-sm btn-danger" 
+                      (click)="onDelete(article.id)">
+                Supprimer
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>

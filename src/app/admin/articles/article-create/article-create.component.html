@@ -1,0 +1,62 @@
+<div class="container mt-4">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="mb-0">Créer un nouvel article</h2>
+          </div>
+          <div class="card-body">
+            <form (submit)="createArticle($event)">
+              <div class="mb-3">
+                <label for="titre" class="form-label">Titre</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="titre" 
+                  required>
+              </div>
+  
+              <div class="mb-3">
+                <label for="content" class="form-label">Contenu</label>
+                <textarea 
+                  class="form-control" 
+                  id="content" 
+                  rows="3"
+                  required></textarea>
+              </div>
+  
+              <div class="mb-3">
+                <label for="price" class="form-label">Prix</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="price" 
+                  required>
+              </div>
+  
+              <div class="mb-3">
+                <label for="category" class="form-label">Catégorie</label>
+                <select 
+                  class="form-select" 
+                  id="category" 
+                  required>
+                  <option value="">Sélectionner une catégorie</option>
+                  @for(category of categories; track category.id) {
+                    <option [value]="category.id">{{category.name}}</option>
+                  }
+                </select>
+              </div>
+  
+              <button type="submit" class="btn btn-primary">Créer l'article</button>
+            </form>
+  
+            @if (error) {
+              <div class="alert alert-danger mt-3">
+                {{error}}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
