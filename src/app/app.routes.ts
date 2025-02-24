@@ -75,5 +75,10 @@ export const routes: Routes = [
   {
       path: '**',
       redirectTo: '/login'
-  }
+  },
+  {
+    path: 'admin/images',
+    component: ImageManagerComponent,
+    canActivate: [authGuard]
+  },
 ];

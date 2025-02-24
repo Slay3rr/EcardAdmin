@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import axios from 'axios';
+import axiosInstance from './axios.config'; // Importez l'instance configurée
 
 export interface CardImage {
   id: string;
@@ -13,21 +13,26 @@ export interface CardImage {
   providedIn: 'root'
 })
 export class ImageService {
-  private apiUrl = 'http://localhost:8000/api/admin';
-
+  private apiUrl = '/admin'; 
   async uploadArticleImage(formData: FormData): Promise<any> {
-    const response = await axios.post(`${this.apiUrl}/upload-image`, formData);
+    // Utilisez axiosInstance au lieu de axios
+    const response = await axiosInstance.post(`${this.apiUrl}/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data' // Important pour l'upload de fichiers
+      }
+    });
     return response.data;
   }
 
-  // Ajout des méthodes manquantes
   async getAllImages(): Promise<CardImage[]> {
-    const response = await axios.get(`${this.apiUrl}/images`);
+    // Utilisez axiosInstance au lieu de axios
+    const response = await axiosInstance.get(`${this.apiUrl}/images`);
     return response.data;
   }
 
   async editImage(id: string, data: { cardName: string; type: string }): Promise<any> {
-    const response = await axios.patch(`${this.apiUrl}/images/${id}`, data);
+    // Utilisez axiosInstance au lieu de axios
+    const response = await axiosInstance.patch(`${this.apiUrl}/images/${id}`, data);
     return response.data;
   }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ArticleService } from './../../../services/article.service';
 import { ImageService } from './../../../services/image.service';
@@ -11,18 +11,21 @@ import { CommonModule } from '@angular/common';
   templateUrl: './article-create.component.html',
   styleUrls: ['./article-create.component.css']
 })
-export class ArticleCreateComponent {
+export class ArticleCreateComponent implements OnInit {
   categories: any[] = [];
+  images: any[] = []; // Pour stocker les images disponibles
   error: string = '';
-  selectedFile: File | null = null;
-  previewUrl: string | null = null;
+  selectedImageId: string | null = null;
   
   constructor(
     private articleService: ArticleService,
-    private imageService: ImageService,  // Ajout du service d'images
+    private imageService: ImageService,
     private router: Router
-  ) {
+  ) {}
+
+  ngOnInit() {
     this.loadCategories();
+    this.loadImages(); // Charger les images au démarrage
   }
 
   async loadCategories() {
@@ -34,39 +37,35 @@ export class ArticleCreateComponent {
     }
   }
 
-  // Nouvelle méthode pour gérer la sélection de fichier
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      this.previewUrl = URL.createObjectURL(input.files[0]);
+  async loadImages() {
+    try {
+      this.images = await this.imageService.getAllImages();
+    } catch (error) {
+      console.error('Erreur lors du chargement des images:', error);
+      this.error = 'Erreur lors du chargement des images';
     }
+  }
+
+  selectImage(imageId: string) {
+    this.selectedImageId = imageId;
   }
 
   async createArticle(event: Event) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     
-    try {
-      let imageUrl = null;
-      
-      // Upload de l'image si une image est sélectionnée
-      if (this.selectedFile) {
-        const formData = new FormData();
-        formData.append('image', this.selectedFile);
-        formData.append('cardName', (form.querySelector('#titre') as HTMLInputElement).value);
-        formData.append('type', 'article');
-        
-        const imageResponse = await this.imageService.uploadArticleImage(formData);
-        imageUrl = imageResponse.url;
-      }
+    if (!this.selectedImageId) {
+      this.error = 'Veuillez sélectionner une image';
+      return;
+    }
 
+    try {
       const articleToSend = {
         Titre: (form.querySelector('#titre') as HTMLInputElement).value,
         content: (form.querySelector('#content') as HTMLTextAreaElement).value,
         price: Number((form.querySelector('#price') as HTMLInputElement).value),
         Category: Number((form.querySelector('#category') as HTMLSelectElement).value),
-        imageUrl: imageUrl  // Ajout de l'URL de l'image
+        imageId: this.selectedImageId  // On envoie l'ID de l'image MongoDB
       };
 
       console.log('Données envoyées:', articleToSend);
