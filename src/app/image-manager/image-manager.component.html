@@ -1,44 +1,52 @@
-<div class="container">
+<div class="image-manager">
     <!-- Upload Form -->
-    <div class="upload-form">
-      <h2>Upload New Image</h2>
-      <form [formGroup]="uploadForm" (submit)="onUpload()">
+    <div class="upload-section">
+      <form [formGroup]="uploadForm" (ngSubmit)="onUpload()">
         <div class="form-group">
-          <input type="file" (change)="onFileSelected($event)" accept="image/*">
+          <label>Nom de la carte</label>
+          <input type="text" formControlName="cardName">
         </div>
         <div class="form-group">
-          <input type="text" formControlName="cardName" placeholder="Card Name">
+          <label>Type</label>
+          <input type="text" formControlName="type">
         </div>
-        <div class="form-group">
-          <input type="text" formControlName="type" placeholder="Type">
+        <div class="file-upload">
+          <input type="file" (change)="onFileSelected($event)" #fileInput>
+          <button type="button" (click)="fileInput.click()">Choisir une image</button>
         </div>
         <button type="submit" [disabled]="!selectedFile">Upload</button>
       </form>
     </div>
   
-    <!-- Images List -->
-    <div class="images-list">
-      <h2>Images</h2>
-      <div class="image-grid">
-        @for (image of images; track image.id) {
-          <div class="image-card">
-            <img [src]="image.url" [alt]="image.cardName">
-            @if (editingImage?.id !== image.id) {
-              <div class="image-info">
-                <p>Name: {{image.cardName}}</p>
-                <p>Type: {{image.type}}</p>
-                <button (click)="startEditing(image)">Edit</button>
-              </div>
-            } @else {
-              <form [formGroup]="editForm" class="edit-form">
-                <input type="text" formControlName="cardName" placeholder="Card Name">
-                <input type="text" formControlName="type" placeholder="Type">
-                <button type="button" (click)="saveEdit()">Save</button>
-                <button type="button" (click)="cancelEdit()">Cancel</button>
-              </form>
-            }
+    <!-- Image Gallery -->
+    <div class="gallery-grid">
+      <div *ngFor="let image of images" class="image-card" [class.selected]="selectedImage === image">
+        <img [src]="image.url" [alt]="image.cardName" (click)="selectImage(image)">
+        <div class="image-info">
+          <p>{{ image.cardName }}</p>
+          <div class="actions">
+            <button (click)="startEditing(image)">Éditer</button>
+            <button (click)="selectImage(image)">Sélectionner</button>
           </div>
-        }
+        </div>
       </div>
+    </div>
+  
+    <!-- Edit Form -->
+    <div *ngIf="editingImage" class="edit-modal">
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <div class="form-group">
+          <label>Nom de la carte</label>
+          <input type="text" formControlName="cardName">
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <input type="text" formControlName="type">
+        </div>
+        <div class="buttons">
+          <button type="submit">Sauvegarder</button>
+          <button type="button" (click)="cancelEdit()">Annuler</button>
+        </div>
+      </form>
     </div>
   </div>

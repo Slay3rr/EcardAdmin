@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ImageService, CardImage } from '../services/image.service';
@@ -12,6 +12,9 @@ import { ImageService, CardImage } from '../services/image.service';
   styleUrl: './image-manager.component.css'
 })
 export class ImageManagerComponent implements OnInit {
+  @Output() imageSelected = new EventEmitter<CardImage>();
+  showGallery = false;
+  selectedImage: CardImage | null = null;
   images: CardImage[] = [];
   selectedFile: File | null = null;
   uploadForm: FormGroup;
@@ -31,6 +34,7 @@ export class ImageManagerComponent implements OnInit {
       cardName: [''],
       type: ['']
     });
+    
   }
 
   async ngOnInit() {
@@ -98,5 +102,13 @@ export class ImageManagerComponent implements OnInit {
   private resetForm() {
     this.selectedFile = null;
     this.uploadForm.reset();
+  }
+  toggleGallery() {
+    this.showGallery = !this.showGallery;
+  }
+
+  selectImage(image: CardImage) {
+    this.selectedImage = image;
+    this.imageSelected.emit(image);
   }
 }
