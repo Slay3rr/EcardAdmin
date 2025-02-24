@@ -6,69 +6,129 @@
           <h2 class="mb-0">Créer un nouvel article</h2>
         </div>
         <div class="card-body">
-          <!-- Image Selection Section -->
+          <!-- Section de sélection d'image -->
           <div class="mb-4">
-            <h4>Sélectionner une image</h4>
-            @if (images.length === 0) {
-              <div class="alert alert-warning">
-                Aucune image disponible. 
-                <a routerLink="/admin/images" class="alert-link">Gérer les images</a>
+            <button type="button" class="btn btn-primary mb-3" (click)="toggleImageSelector()">
+              {{ selectedImage() ? 'Changer l\'image' : 'Sélectionner une image' }}
+            </button>
+
+            <!-- Aperçu de l'image sélectionnée -->
+            @if (selectedImage()) {
+              <div class="selected-image-preview">
+                <img [src]="selectedImage().url" [alt]="selectedImage().cardName">
+                <p class="mt-2 mb-0">{{selectedImage().cardName}}</p>
+                <span class="badge bg-secondary">{{selectedImage().type}}</span>
               </div>
-            } @else {
-              <div class="row image-grid g-3">
-                @for(image of images; track image._id) {
-                  <div class="col-md-4 col-lg-3">
-                    <div class="card h-100" 
-                         [class.selected]="selectedImageId === image._id"
-                         (click)="selectImage(image._id)">
-                      <img [src]="image.url" 
-                           [alt]="image.cardName"
-                           class="card-img-top">
-                      <div class="card-body">
-                        <p class="card-text">{{image.cardName}}</p>
-                        <span class="badge bg-secondary">{{image.type}}</span>
+            }
+
+            <!-- Modal de sélection d'images -->
+            @if (showImageSelector()) {
+              <div class="image-selector-modal">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Sélectionner une image</h5>
+                    <button type="button" class="btn-close" (click)="toggleImageSelector()"></button>
+                  </div>
+                  
+                  <div class="modal-body">
+                    <!-- Filtres -->
+                    <div class="row mb-3">
+                      <div class="col-md-8">
+                        <input type="text"
+                               class="form-control"
+                               [value]="searchQuery()"
+                               (input)="updateSearch($event)"
+                               placeholder="Rechercher une image...">
+                      </div>
+                      <div class="col-md-4">
+                        <select class="form-select"
+                          [value]="selectedType()"
+                          (change)="updateType($event)">
+                    <option value="">Tous les types</option>
+                    @for(type of imageTypes(); track $index) {  <!-- Changement ici -->
+                      <option [value]="type">{{type}}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Grille d'images -->
+                    <div class="images-viewport">
+                      <div class="image-grid">
+                        @for(image of filteredImages(); track image._id) {
+                          <div class="image-card" 
+                               [class.selected]="selectedImageId() === image._id"
+                               (click)="selectImage(image)">
+                            <div class="image-container">
+                              <img [src]="image.url" [alt]="image.cardName">
+                            </div>
+                            <div class="image-info">
+                              <small>{{image.cardName}}</small>
+                              <span class="badge bg-secondary">{{image.type}}</span>
+                            </div>
+                          </div>
+                        }
                       </div>
                     </div>
                   </div>
-                }
+                </div>
               </div>
             }
           </div>
 
+          <!-- Formulaire de création d'article -->
           <form (submit)="createArticle($event)">
             <div class="mb-3">
               <label for="titre" class="form-label">Titre</label>
-              <input type="text" class="form-control" id="titre" required>
+              <input type="text" 
+                     class="form-control" 
+                     id="titre" 
+                     required
+                     (input)="onInputChange($event)">
             </div>
-
+          
             <div class="mb-3">
               <label for="content" class="form-label">Contenu</label>
-              <textarea class="form-control" id="content" rows="3" required></textarea>
+              <textarea class="form-control" 
+                        id="content" 
+                        rows="3" 
+                        required
+                        (input)="onInputChange($event)"></textarea>
             </div>
-
+          
             <div class="mb-3">
               <label for="price" class="form-label">Prix</label>
-              <input type="number" class="form-control" id="price" required>
+              <input type="number" 
+                     class="form-control" 
+                     id="price" 
+                     required
+                     min="0"
+                     (input)="onInputChange($event)">
             </div>
-
+          
             <div class="mb-3">
               <label for="category" class="form-label">Catégorie</label>
-              <select class="form-select" id="category" required>
+              <select class="form-select" 
+                      id="category" 
+                      required
+                      (change)="onInputChange($event)">
                 <option value="">Sélectionner une catégorie</option>
-                @for(category of categories; track category.id) {
+                @for(category of categories(); track category.id) {
                   <option [value]="category.id">{{category.name}}</option>
                 }
               </select>
             </div>
-
-            <button type="submit" class="btn btn-primary" [disabled]="!selectedImageId">
+          
+            <button type="submit" 
+                    class="btn btn-primary" 
+                    [disabled]="!formIsValid()">
               Créer l'article
             </button>
           </form>
 
-          @if (error) {
+          @if (error()) {
             <div class="alert alert-danger mt-3">
-              {{error}}
+              {{error()}}
             </div>
           }
         </div>
