@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ArticleService } from '../../../services/article.service';
 import { FormsModule } from '@angular/forms';
+import { OfferService } from '../../../services/offer.service';
+
 
 
 interface Category {
@@ -35,6 +37,7 @@ interface Article {
   selector: 'app-article-detail',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
+  providers: [ArticleService, OfferService], // Ajout du OfferService ici
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.css']
 })
@@ -43,9 +46,13 @@ export class ArticleDetailComponent implements OnInit {
   error = '';
   isEditing = false;
   editedArticle: Partial<Article> = {};
+  isDeleting = false;
+
 
   constructor(
     private articleService: ArticleService,
+    private offerService: OfferService, // Ajouter le service d'offres
+
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -113,5 +120,28 @@ export class ArticleDetailComponent implements OnInit {
       content: this.article.content,
       price: this.article.price
     };
+  }
+  async deleteOffer(offerId: number) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')) {
+      return;
+    }
+  
+    try {
+      this.isDeleting = true;
+      // On passe l'ID de l'article et l'ID de l'offre
+      await this.offerService.deleteOffer(this.article.id, offerId);
+      
+      // Recharger l'article
+      const id = this.route.snapshot.params['id'];
+      this.article = await this.articleService.getArticle(id);
+      
+    } catch (error: any) {
+      this.error = 'Erreur lors de la suppression de l\'offre';
+      if (error.response?.data?.message) {
+        this.error = error.response.data.message;
+      }
+    } finally {
+      this.isDeleting = false;
+    }
   }
 }

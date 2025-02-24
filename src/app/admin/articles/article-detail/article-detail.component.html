@@ -75,6 +75,7 @@
                                 <th>Prix proposé</th>
                                 <th>Quantité</th>
                                 <th>Description</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -83,6 +84,14 @@
                                 <td>{{ offre.price }}€</td>
                                 <td>{{ offre.quantity }}</td>
                                 <td>{{ offre.description || '-' }}</td>
+                                <td>
+                                    <button 
+                                class="btn btn-danger btn-sm" 
+                                (click)="deleteOffer(offre.id)"
+                                [disabled]="isDeleting">
+                                <i class="bi bi-trash"></i> Supprimer
+                                    </button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
