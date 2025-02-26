@@ -57,17 +57,17 @@ export class ArticleCreateComponent implements OnInit {
       this.error.set('Veuillez remplir tous les champs correctement');
       return;
     }
-
+  
     try {
       const formValues = this.articleForm.value;
       const articleToSend = {
-        Titre: formValues.titre,
+        titre: formValues.titre,
         content: formValues.content,
-        price: Number(formValues.price),
-        Category: Number(formValues.category),
+        price: formValues.price,  // Enlever Number()
+        category: formValues.category,  // Enlever Number()
         imageId: this.selectedImageId()
       };
-
+  
       console.log('Envoi de l\'article:', articleToSend);
       await this.articleService.createArticle(articleToSend);
       this.router.navigate(['/admin/articles']);
@@ -76,8 +76,6 @@ export class ArticleCreateComponent implements OnInit {
       this.error.set('Erreur lors de la création de l\'article');
     }
   }
-
-  // Reste des méthodes...
   updateSearch(event: string) {
     this.searchQuery.set(event);
     this.filterImages();

@@ -1,22 +1,15 @@
 import { Injectable } from '@angular/core';
-import axios, { AxiosError } from 'axios';
+import axiosInstance from './axios.config';  // Utilisez l'instance configurée
 
 @Injectable({
   providedIn: 'root'
 })
 export class ArticleService {
-  private endpoint = 'http://web006.azure.certif.academy/api/admin/articles'; // URL complète
-  private getHeaders() {
-    return {
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-      'Content-Type': 'application/json'
-    };
-  }
+  private endpoint = 'http://web006.azure.certif.academy/api/admin/articles';
+
   async getCategories() {
     try {
-      const response = await axios.get(`${this.endpoint}/categories`, {
-        headers: this.getHeaders()
-      });
+      const response = await axiosInstance.get(`${this.endpoint}/categories`);
       return response.data;
     } catch (error) {
       console.error('Erreur getCategories:', error);
@@ -26,7 +19,7 @@ export class ArticleService {
 
   async getArticles() {
     try {
-      const response = await axios.get(this.endpoint, { headers: this.getHeaders() });
+      const response = await axiosInstance.get(this.endpoint);
       return response.data;
     } catch (error) {
       console.error('Erreur getAllArticles:', error);
@@ -36,7 +29,7 @@ export class ArticleService {
 
   async getArticle(id: number) {
     try {
-      const response = await axios.get(`${this.endpoint}/${id}`, { headers: this.getHeaders() });
+      const response = await axiosInstance.get(`${this.endpoint}/${id}`);
       return response.data;
     } catch (error) {
       console.error('Erreur getArticle:', error);
@@ -46,9 +39,7 @@ export class ArticleService {
 
   async createArticle(articleData: any) {
     try {
-      const response = await axios.post(this.endpoint, articleData, { 
-        headers: this.getHeaders() 
-      });
+      const response = await axiosInstance.post(this.endpoint, articleData);
       return response.data;
     } catch (error) {
       console.error('Erreur createArticle:', error);
@@ -58,9 +49,7 @@ export class ArticleService {
 
   async updateArticle(id: number, articleData: any) {
     try {
-      const response = await axios.put(`${this.endpoint}/${id}`, articleData, { 
-        headers: this.getHeaders() 
-      });
+      const response = await axiosInstance.put(`${this.endpoint}/${id}`, articleData);
       return response.data;
     } catch (error) {
       console.error('Erreur updateArticle:', error);
@@ -70,7 +59,7 @@ export class ArticleService {
 
   async deleteArticle(id: number) {
     try {
-      await axios.delete(`${this.endpoint}/${id}`, { headers: this.getHeaders() });
+      await axiosInstance.delete(`${this.endpoint}/${id}`);
     } catch (error) {
       console.error('Erreur deleteArticle:', error);
       throw error;
