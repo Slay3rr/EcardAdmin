@@ -1,18 +1,27 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { ArticleService } from './../../../services/article.service';
 import { ImageService } from './../../../services/image.service';
 import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+
+interface FormState {
+  titre: string;
+  content: string;
+  price: number;
+  category: string;
+}
 
 @Component({
   selector: 'app-article-create',
   standalone: true,
-  imports: [CommonModule, ScrollingModule],
+  imports: [CommonModule, ScrollingModule, ReactiveFormsModule],
   templateUrl: './article-create.component.html',
   styleUrls: ['./article-create.component.css']
 })
 export class ArticleCreateComponent implements OnInit {
+  // Signals pour les données
   categories = signal<any[]>([]);
   images = signal<any[]>([]);
   filteredImages = signal<any[]>([]);
@@ -23,19 +32,41 @@ export class ArticleCreateComponent implements OnInit {
   searchQuery = signal<string>('');
   selectedType = signal<string>('');
   imageTypes = signal<string[]>([]);
-  formData = signal({
+  articleForm: FormGroup;
+
+  // Signal pour l'état du formulaire
+  formState = signal<FormState>({
     titre: '',
     content: '',
     price: 0,
     category: ''
   });
-  formIsValid = signal(false);
+
+  // Signal computed pour la validité du formulaire
+  formIsValid = computed(() => {
+    const state = this.formState();
+    return Boolean(
+      state.titre &&
+      state.content &&
+      state.price > 0 &&
+      state.category &&
+      this.selectedImageId()
+    );
+  });
 
   constructor(
     private articleService: ArticleService,
     private imageService: ImageService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private fb: FormBuilder
+  ) {
+    this.articleForm = this.fb.group({
+      titre: ['', Validators.required],
+      content: ['', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      category: ['', Validators.required]
+    });
+  }
 
   ngOnInit() {
     this.loadCategories();
@@ -56,13 +87,10 @@ export class ArticleCreateComponent implements OnInit {
     try {
       const imgs = await this.imageService.getAllImages();
       this.images.set(imgs);
-      
-      // Assurez-vous que les types ne sont pas vides et sont uniques
       const types = imgs
         .map(img => img.type)
-        .filter(type => type && type.trim() !== '');  // Filtrer les types vides
-      
-      this.imageTypes.set([...new Set(types)]);  // Utiliser Set pour garantir l'unicité
+        .filter(type => type && type.trim() !== '');
+      this.imageTypes.set([...new Set(types)]);
       this.filterImages();
     } catch (error) {
       console.error('Erreur lors du chargement des images:', error);
@@ -79,6 +107,13 @@ export class ArticleCreateComponent implements OnInit {
       return matchesSearch && matchesType;
     });
     this.filteredImages.set(filtered);
+  }
+
+  updateFormField(field: keyof FormState, value: string | number) {
+    this.formState.update(state => ({
+      ...state,
+      [field]: value
+    }));
   }
 
   toggleImageSelector() {
@@ -103,64 +138,25 @@ export class ArticleCreateComponent implements OnInit {
     this.filterImages();
   }
 
-  onInputChange(event: Event) {
-    // Force un recalcul du signal computed
-    this.selectedImageId.set(this.selectedImageId());
-  }
-
-  checkFormValidity() {
-    const titre = (document.querySelector('#titre') as HTMLInputElement)?.value;
-    const content = (document.querySelector('#content') as HTMLTextAreaElement)?.value;
-    const price = Number((document.querySelector('#price') as HTMLInputElement)?.value);
-    const category = (document.querySelector('#category') as HTMLSelectElement)?.value;
-    const imageSelected = this.selectedImageId();
-
-    console.log('Vérification du formulaire:', {
-      titre,
-      content,
-      price,
-      category,
-      imageSelected
-    });
-
-    const isValid = Boolean(
-      titre && 
-      content && 
-      price > 0 && 
-      category && 
-      imageSelected
-    );
-
-    console.log('Formulaire valide:', isValid);
-    this.formIsValid.set(isValid);
-    return isValid;
-  }
   async createArticle(event: Event) {
     event.preventDefault();
-    const form = event.target as HTMLFormElement;
     
     if (!this.formIsValid()) {
-      console.log('Formulaire invalide:', {
-        titre: (form.querySelector('#titre') as HTMLInputElement)?.value,
-        content: (form.querySelector('#content') as HTMLTextAreaElement)?.value,
-        price: (form.querySelector('#price') as HTMLInputElement)?.value,
-        category: (form.querySelector('#category') as HTMLSelectElement)?.value,
-        imageId: this.selectedImageId()
-      });
       this.error.set('Veuillez remplir tous les champs correctement');
       return;
     }
 
     try {
+      const formValues = this.articleForm.value;
       const articleToSend = {
-        Titre: (form.querySelector('#titre') as HTMLInputElement).value,
-        content: (form.querySelector('#content') as HTMLTextAreaElement).value,
-        price: Number((form.querySelector('#price') as HTMLInputElement).value),
-        Category: Number((form.querySelector('#category') as HTMLSelectElement).value),
+        Titre: formValues.titre,
+        content: formValues.content,
+        price: Number(formValues.price),
+        Category: Number(formValues.category),
         imageId: this.selectedImageId()
       };
 
-      console.log('Données à envoyer:', articleToSend);
+      console.log('Envoi de l\'article:', articleToSend);
       await this.articleService.createArticle(articleToSend);
       this.router.navigate(['/admin/articles']);
     } catch (error) {
@@ -168,5 +164,4 @@ export class ArticleCreateComponent implements OnInit {
       this.error.set('Erreur lors de la création de l\'article');
     }
   }
-  
 }

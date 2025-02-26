@@ -42,11 +42,11 @@
                       </div>
                       <div class="col-md-4">
                         <select class="form-select"
-                          [value]="selectedType()"
-                          (change)="updateType($event)">
-                    <option value="">Tous les types</option>
-                    @for(type of imageTypes(); track $index) {  <!-- Changement ici -->
-                      <option [value]="type">{{type}}</option>
+                                [value]="selectedType()"
+                                (change)="updateType($event)">
+                          <option value="">Tous les types</option>
+                          @for(type of imageTypes(); track $index) {
+                            <option [value]="type">{{type}}</option>
                           }
                         </select>
                       </div>
@@ -77,14 +77,13 @@
           </div>
 
           <!-- Formulaire de création d'article -->
-          <form (submit)="createArticle($event)">
+          <form [formGroup]="articleForm" (ngSubmit)="createArticle($event)">
             <div class="mb-3">
               <label for="titre" class="form-label">Titre</label>
               <input type="text" 
                      class="form-control" 
                      id="titre" 
-                     required
-                     (input)="onInputChange($event)">
+                     formControlName="titre">
             </div>
           
             <div class="mb-3">
@@ -92,8 +91,7 @@
               <textarea class="form-control" 
                         id="content" 
                         rows="3" 
-                        required
-                        (input)="onInputChange($event)"></textarea>
+                        formControlName="content"></textarea>
             </div>
           
             <div class="mb-3">
@@ -101,17 +99,15 @@
               <input type="number" 
                      class="form-control" 
                      id="price" 
-                     required
                      min="0"
-                     (input)="onInputChange($event)">
+                     formControlName="price">
             </div>
           
             <div class="mb-3">
               <label for="category" class="form-label">Catégorie</label>
               <select class="form-select" 
                       id="category" 
-                      required
-                      (change)="onInputChange($event)">
+                      formControlName="category">
                 <option value="">Sélectionner une catégorie</option>
                 @for(category of categories(); track category.id) {
                   <option [value]="category.id">{{category.name}}</option>
