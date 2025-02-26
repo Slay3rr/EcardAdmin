@@ -107,10 +107,10 @@
             <div class="mb-3">
               <label for="price" class="form-label">Prix</label>
               <input type="number" 
-                     class="form-control" 
-                     id="price" 
-                     min="0"
-                     formControlName="price">
+              class="form-control" 
+              id="price" 
+              min="0"
+              formControlName="price">
               @if (articleForm.get('price')?.invalid && articleForm.get('price')?.touched) {
                 <div class="text-danger">
                   Le prix doit être supérieur à 0
@@ -121,20 +121,37 @@
             <div class="mb-3">
               <label for="category" class="form-label">Catégorie</label>
               <select class="form-select" 
-                      id="category" 
-                      formControlName="category">
-                <option value="">Sélectionner une catégorie</option>
-                @for(category of categories(); track category.id) {
-                  <option [value]="category.id">{{category.name}}</option>
-                }
-              </select>
+                id="category" 
+                formControlName="category">
+            <option [ngValue]="null">Sélectionner une catégorie</option>
+            @for(category of categories(); track category.id) {
+                <option [ngValue]="category.id">{{category.name}}</option>
+            }
+        </select>
               @if (articleForm.get('category')?.invalid && articleForm.get('category')?.touched) {
                 <div class="text-danger">
                   La catégorie est requise
                 </div>
               }
             </div>
-          
+            <div class="mt-3">
+              <p>État du formulaire :</p>
+              <ul>
+                <li>Titre valide : {{articleForm.get('titre')?.valid}}</li>
+                <li>Contenu valide : {{articleForm.get('content')?.valid}}</li>
+                <li>Prix valide : {{articleForm.get('price')?.valid}}</li>
+                <li>Catégorie valide : {{articleForm.get('category')?.valid}}</li>
+                <li>Image sélectionnée : {{selectedImageId() !== null}}</li>
+                <li>Formulaire entier valide : {{articleForm.valid}}</li>
+              </ul>
+            </div>
+            <div class="mt-3">
+              <p>Debug image :</p>
+              <pre>
+                  Selected Image ID: {{selectedImageId() | json}}
+                  Selected Image: {{selectedImage() | json}}
+              </pre>
+          </div>
             <button type="submit" 
                     class="btn btn-primary" 
                     [disabled]="!articleForm.valid || !selectedImageId()">

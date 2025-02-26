@@ -42,16 +42,25 @@ export class ArticleCreateComponent implements OnInit {
       titre: ['', Validators.required],
       content: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
-      category: ['', Validators.required]
+      category: [null, Validators.required] // Changé de '' à null
     });
-  }
+}
 
   ngOnInit() {
     this.loadCategories();
     this.loadImages();
+    
+    // Ajouter ceci pour le debug
+    this.articleForm.valueChanges.subscribe(values => {
+      console.log('Form values:', values);
+      console.log('Form valid:', this.articleForm.valid);
+      console.log('Form errors:', this.articleForm.errors);
+      console.log('Selected image:', this.selectedImageId());
+    });
   }
 
   // Modifié pour correspondre à (ngSubmit)="createArticle()"
+  // Dans article-create.component.ts
   async createArticle() {
     if (this.articleForm.invalid || !this.selectedImageId()) {
       this.error.set('Veuillez remplir tous les champs correctement');
@@ -60,22 +69,33 @@ export class ArticleCreateComponent implements OnInit {
   
     try {
       const formValues = this.articleForm.value;
+      
+      // Modification de la casse des champs pour correspondre à l'API
       const articleToSend = {
-        titre: formValues.titre,
-        content: formValues.content,
-        price: formValues.price,  // Enlever Number()
-        category: formValues.category,  // Enlever Number()
-        imageId: this.selectedImageId()
+        Titre: formValues.titre,      // "Titre" au lieu de "titre"
+        Content: formValues.content,  // "Content" au lieu de "content"
+        Price: Number(formValues.price),    // "Price" au lieu de "price"
+        Category: Number(formValues.category),  // "Category" au lieu de "category"
+        ImageId: this.selectedImageId()    // "ImageId" au lieu de "imageId"
       };
-  
-      console.log('Envoi de l\'article:', articleToSend);
-      await this.articleService.createArticle(articleToSend);
+
+      console.log('Données à envoyer:', JSON.stringify(articleToSend, null, 2));
+
+      const result = await this.articleService.createArticle(articleToSend);
       this.router.navigate(['/admin/articles']);
-    } catch (error) {
-      console.error('Erreur lors de la création:', error);
-      this.error.set('Erreur lors de la création de l\'article');
+      
+    } catch (error: any) {
+      console.error('ERREUR DÉTAILLÉE:', error.response?.data);
+      if (error.response?.data?.errors) {
+        const errorMessages = error.response.data.errors.map((err: any) => 
+          `${err.field}: ${err.message}`
+        ).join('\n');
+        this.error.set(errorMessages);
+      } else {
+        this.error.set('Erreur lors de la création de l\'article');
+      }
     }
-  }
+}
   updateSearch(event: string) {
     this.searchQuery.set(event);
     this.filterImages();
@@ -128,7 +148,7 @@ export class ArticleCreateComponent implements OnInit {
 
   selectImage(image: any) {
     this.selectedImage.set(image);
-    this.selectedImageId.set(image._id);
+    this.selectedImageId.set(image.id); // ✅ Utilise id
     this.showImageSelector.set(false);
-  }
+}
 }

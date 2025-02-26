@@ -39,14 +39,23 @@ export class ArticleService {
 
   async createArticle(articleData: any) {
     try {
+      console.log('SERVICE - Données reçues:', JSON.stringify(articleData, null, 2));
+      console.log('SERVICE - URL:', this.endpoint);
+
       const response = await axiosInstance.post(this.endpoint, articleData);
       return response.data;
-    } catch (error) {
-      console.error('Erreur createArticle:', error);
+      
+    } catch (error: any) {
+      console.error('SERVICE - ERREUR:', JSON.stringify({
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        errorData: error.response?.data,
+        requestData: articleData,
+        requestUrl: this.endpoint
+      }, null, 2));
       throw error;
     }
-  }
-
+}
   async updateArticle(id: number, articleData: any) {
     try {
       const response = await axiosInstance.put(`${this.endpoint}/${id}`, articleData);
