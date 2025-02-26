@@ -41,8 +41,8 @@ export class ArticleCreateComponent implements OnInit {
     this.articleForm = this.fb.group({
       titre: ['', Validators.required],
       content: ['', Validators.required],
-      price: [0, [Validators.required, Validators.min(0)]],
-      category: [null, Validators.required] // Changé de '' à null
+      price: [null, [Validators.required, Validators.min(0)]],
+      category: [null, Validators.required]
     });
 }
 
@@ -66,30 +66,39 @@ export class ArticleCreateComponent implements OnInit {
       this.error.set('Veuillez remplir tous les champs correctement');
       return;
     }
-  
+
+    // On est sûr que selectedImageId() n'est pas null ici grâce au check précédent
+    const imageId = this.selectedImageId();
+    if (!imageId) {
+      this.error.set('Une image est requise');
+      return;
+    }
+
     try {
       const formValues = this.articleForm.value;
       
-      // Modification de la casse des champs pour correspondre à l'API
       const articleToSend = {
-        Titre: formValues.titre,      // "Titre" au lieu de "titre"
-        Content: formValues.content,  // "Content" au lieu de "content"
-        Price: Number(formValues.price),    // "Price" au lieu de "price"
-        Category: Number(formValues.category),  // "Category" au lieu de "category"
-        ImageId: this.selectedImageId()    // "ImageId" au lieu de "imageId"
+        Titre: String(formValues.titre).trim(),
+        content: String(formValues.content).trim(),
+        price: Number(formValues.price),
+        Category: Number(formValues.category),
+        imageId: imageId  // On utilise la variable qu'on a vérifié
       };
 
-      console.log('Données à envoyer:', JSON.stringify(articleToSend, null, 2));
-
+      console.log('Données à envoyer:', articleToSend);
       const result = await this.articleService.createArticle(articleToSend);
       this.router.navigate(['/admin/articles']);
       
     } catch (error: any) {
-      console.error('ERREUR DÉTAILLÉE:', error.response?.data);
+      console.error('Erreur de création:', {
+        sentData: error.response?.config?.data,
+        errorResponse: error.response?.data
+      });
+      
       if (error.response?.data?.errors) {
-        const errorMessages = error.response.data.errors.map((err: any) => 
-          `${err.field}: ${err.message}`
-        ).join('\n');
+        const errorMessages = error.response.data.errors
+          .map((err: any) => `${err.message}`)
+          .join('\n');
         this.error.set(errorMessages);
       } else {
         this.error.set('Erreur lors de la création de l\'article');

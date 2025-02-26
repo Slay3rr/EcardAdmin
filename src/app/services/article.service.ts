@@ -37,25 +37,28 @@ export class ArticleService {
     }
   }
 
-  async createArticle(articleData: any) {
+  async createArticle(articleData: {
+    Titre: string,
+    content: string,
+    price: number,
+    Category: number,
+    imageId: string
+  }) {
     try {
-      console.log('SERVICE - Données reçues:', JSON.stringify(articleData, null, 2));
-      console.log('SERVICE - URL:', this.endpoint);
-
-      const response = await axiosInstance.post(this.endpoint, articleData);
+      console.log('SERVICE - Données à envoyer:', articleData);
+      const response = await axiosInstance.post(this.endpoint, articleData); // Utilisation de axiosInstance au lieu de axios
       return response.data;
-      
     } catch (error: any) {
-      console.error('SERVICE - ERREUR:', JSON.stringify({
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        errorData: error.response?.data,
+      console.error('SERVICE - ERREUR:', {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        errorData: error?.response?.data,
         requestData: articleData,
         requestUrl: this.endpoint
-      }, null, 2));
+      });
       throw error;
     }
-}
+  }
   async updateArticle(id: number, articleData: any) {
     try {
       const response = await axiosInstance.put(`${this.endpoint}/${id}`, articleData);
