@@ -36,14 +36,14 @@
                       <div class="col-md-8">
                         <input type="text"
                                class="form-control"
-                               [value]="searchQuery()"
-                               (input)="updateSearch($event)"
+                               [ngModel]="searchQuery()"
+                               (ngModelChange)="updateSearch($event)"
                                placeholder="Rechercher une image...">
                       </div>
                       <div class="col-md-4">
                         <select class="form-select"
-                                [value]="selectedType()"
-                                (change)="updateType($event)">
+                                [ngModel]="selectedType()"
+                                (ngModelChange)="updateType($event)">
                           <option value="">Tous les types</option>
                           @for(type of imageTypes(); track $index) {
                             <option [value]="type">{{type}}</option>
@@ -77,13 +77,18 @@
           </div>
 
           <!-- Formulaire de création d'article -->
-          <form [formGroup]="articleForm" (ngSubmit)="createArticle($event)">
+          <form [formGroup]="articleForm" (ngSubmit)="createArticle()">
             <div class="mb-3">
               <label for="titre" class="form-label">Titre</label>
               <input type="text" 
                      class="form-control" 
                      id="titre" 
                      formControlName="titre">
+              @if (articleForm.get('titre')?.invalid && articleForm.get('titre')?.touched) {
+                <div class="text-danger">
+                  Le titre est requis
+                </div>
+              }
             </div>
           
             <div class="mb-3">
@@ -92,6 +97,11 @@
                         id="content" 
                         rows="3" 
                         formControlName="content"></textarea>
+              @if (articleForm.get('content')?.invalid && articleForm.get('content')?.touched) {
+                <div class="text-danger">
+                  Le contenu est requis
+                </div>
+              }
             </div>
           
             <div class="mb-3">
@@ -101,6 +111,11 @@
                      id="price" 
                      min="0"
                      formControlName="price">
+              @if (articleForm.get('price')?.invalid && articleForm.get('price')?.touched) {
+                <div class="text-danger">
+                  Le prix doit être supérieur à 0
+                </div>
+              }
             </div>
           
             <div class="mb-3">
@@ -113,11 +128,16 @@
                   <option [value]="category.id">{{category.name}}</option>
                 }
               </select>
+              @if (articleForm.get('category')?.invalid && articleForm.get('category')?.touched) {
+                <div class="text-danger">
+                  La catégorie est requise
+                </div>
+              }
             </div>
           
             <button type="submit" 
                     class="btn btn-primary" 
-                    [disabled]="!formIsValid()">
+                    [disabled]="!articleForm.valid || !selectedImageId()">
               Créer l'article
             </button>
           </form>
